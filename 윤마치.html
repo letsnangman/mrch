@@ -1,0 +1,325 @@
+﻿<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html lang="ja">
+<head>
+    <meta http-equiv="Content-Style-Type" content="text/css">
+    <meta http-equiv="Content-Script-Type" content="text/javascript">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- 반응형을 위한 뷰포트 설정 -->
+    <title>윤마치(MRCH) 노래 소트</title>
+    <script type="text/javascript">
+var namMember = new Array(
+    "영화처럼",
+    "Wonderland",
+    "Ringo",
+    "아직은 낭만",
+    "자장가(feat.MRCH)",
+    "The Way It Goes",
+    "Rosy",
+    "I Like You",
+    "나의 세상 너의 세상",
+    "Tricky",
+    "Hear My Love",
+    "Classic(feat.MRCH)",
+    "Color It",
+    "마치 무드",
+    "Aim for love : 하트헌터 퀸",
+    "Love is a magic",
+    "Blue heart",
+    "나쁜 영원",
+    "불안 나무",
+    "한 곡 짜리 (2020)",
+    "서로로 채워 나갈 순간들",
+    "새벽에게",
+    "She(feat.MRCH)",
+    "우리 둘 사이",
+    "무궁화 꽃이 피었나",
+    "Sunlight",
+    "아쉬운 모양",
+    "Lovers",
+    "항복",
+    "나인데",
+    "너로부터야",
+    "Eternal Bloom",
+    "유일한 향기",
+    "안녕!",
+    "세일즈",
+    "Come with me",
+    "휴먼 매커니즘",
+    "지구를 가졌어도",
+    "노스탤지어",
+    "폭설",
+    "More and More",
+    "초록",
+);
+
+
+
+        var lstMember = new Array();
+        var parent = new Array();
+        var equal = new Array();
+        var rec = new Array();
+        var cmp1, cmp2;
+        var head1, head2;
+        var nrec;
+        var numQuestion;
+        var totalSize;
+        var finishSize;
+        var finishFlag;
+
+        // Initializing list
+        function initList() {
+            var n = 0;
+            var mid;
+            var i;
+
+            lstMember[n] = new Array();
+            for (i = 0; i < namMember.length; i++) {
+                lstMember[n][i] = i;
+            }
+            parent[n] = -1;
+            totalSize = 0;
+            n++;
+
+            for (i = 0; i < lstMember.length; i++) {
+                if (lstMember[i].length >= 2) {
+                    mid = Math.ceil(lstMember[i].length / 2);
+                    lstMember[n] = new Array();
+                    lstMember[n] = lstMember[i].slice(0, mid);
+                    totalSize += lstMember[n].length;
+                    parent[n] = i;
+                    n++;
+                    lstMember[n] = new Array();
+                    lstMember[n] = lstMember[i].slice(mid, lstMember[i].length);
+                    totalSize += lstMember[n].length;
+                    parent[n] = i;
+                    n++;
+                }
+            }
+
+            for (i = 0; i < namMember.length; i++) {
+                rec[i] = 0;
+            }
+            nrec = 0;
+
+            for (i = 0; i <= namMember.length; i++) {
+                equal[i] = -1;
+            }
+
+            cmp1 = lstMember.length - 2;
+            cmp2 = lstMember.length - 1;
+            head1 = 0;
+            head2 = 0;
+            numQuestion = 1;
+            finishSize = 0;
+            finishFlag = 0;
+        }
+
+        // Sorting list
+        function sortList(flag) {
+            var i;
+            var str;
+
+            if (flag < 0) {
+                rec[nrec] = lstMember[cmp1][head1];
+                head1++;
+                nrec++;
+                finishSize++;
+                while (equal[rec[nrec - 1]] != -1) {
+                    rec[nrec] = lstMember[cmp1][head1];
+                    head1++;
+                    nrec++;
+                    finishSize++;
+                }
+            } else if (flag > 0) {
+                rec[nrec] = lstMember[cmp2][head2];
+                head2++;
+                nrec++;
+                finishSize++;
+                while (equal[rec[nrec - 1]] != -1) {
+                    rec[nrec] = lstMember[cmp2][head2];
+                    head2++;
+                    nrec++;
+                    finishSize++;
+                }
+            }
+
+            if (head1 < lstMember[cmp1].length && head2 == lstMember[cmp2].length) {
+                while (head1 < lstMember[cmp1].length) {
+                    rec[nrec] = lstMember[cmp1][head1];
+                    head1++;
+                    nrec++;
+                    finishSize++;
+                }
+            } else if (head1 == lstMember[cmp1].length && head2 < lstMember[cmp2].length) {
+                while (head2 < lstMember[cmp2].length) {
+                    rec[nrec] = lstMember[cmp2][head2];
+                    head2++;
+                    nrec++;
+                    finishSize++;
+                }
+            }
+
+            if (head1 == lstMember[cmp1].length && head2 == lstMember[cmp2].length) {
+                for (i = 0; i < lstMember[cmp1].length + lstMember[cmp2].length; i++) {
+                    lstMember[parent[cmp1]][i] = rec[i];
+                }
+                lstMember.pop();
+                lstMember.pop();
+                cmp1 = cmp1 - 2;
+                cmp2 = cmp2 - 2;
+                head1 = 0;
+                head2 = 0;
+
+                if (head1 == 0 && head2 == 0) {
+                    for (i = 0; i < namMember.length; i++) {
+                        rec[i] = 0;
+                    }
+                    nrec = 0;
+                }
+            }
+
+            if (cmp1 < 0) {
+                str = "Battle No." + (numQuestion - 1) + "<br>" + Math.floor(finishSize * 100 / totalSize) + "% sorted.";
+                document.getElementById("battleNumber").innerHTML = str;
+                showResult();
+                finishFlag = 1;
+            } else {
+                showImage();
+            }
+        }
+
+        function showResult() {
+            var ranking = 1;
+            var sameRank = 1;
+            var str = "";
+            var i;
+
+          // 문구 추가
+       str += "<p style='font-family: \"맑은 고딕\", sans-serif; 'font-size: 10px; font-weight: bold; margin-bottom: 10px;'>ੈ✩‧₊˚ 당신의 윤마치 취향은 ˖˚ ͙ෆ</p>";
+
+            str += "<table style='width:200px; font-size:12px; line-height:120%; margin-left:auto; margin-right:auto; border:1px solid #000; border-collapse:collapse' align='center'>";
+            str += "<tr><td style='color:#ffffff; background-color:#000; text-align:center;'>순위</td><td style='color:#ffffff; background-color:#000; text-align:center;'>이름</td></tr>";
+
+            for (i = 0; i < namMember.length; i++) {
+                str += "<tr><td style='border:1px solid #000; text-align:center; padding-right:5px;'>" + ranking + "</td><td style='border:1px solid #000; padding-left:5px;'>" + namMember[lstMember[0][i]] + "</td></tr>";
+                if (i < namMember.length - 1) {
+                    if (equal[lstMember[0][i]] == lstMember[0][i + 1]) {
+                        sameRank++;
+                    } else {
+                        ranking += sameRank;
+                        sameRank = 1;
+                    }
+                }
+            }
+            str += "</table>";
+            document.getElementById("resultField").innerHTML = str;
+
+            document.getElementById("battleNumber").style.display = "none";
+        document.getElementById("leftField").style.display = "none";
+            document.getElementById("rightField").style.display = "none";
+        }
+
+        function showImage() {
+            var str0 = "Battle No." + numQuestion + "<br>" + Math.floor(finishSize * 100 / totalSize) + "% sorted.";
+            var str1 = "" + toNameFace(lstMember[cmp1][head1]);
+            var str2 = "" + toNameFace(lstMember[cmp2][head2]);
+
+            document.getElementById("battleNumber").innerHTML = str0;
+            document.getElementById("leftField").innerHTML = str1;
+            document.getElementById("rightField").innerHTML = str2;
+
+            numQuestion++;
+        }
+
+        function toNameFace(n) {
+            var str = namMember[n];
+            return str;
+        }
+    </script>
+
+<style type="text/css">
+        body {
+            margin: 0; /* 기본 여백 제거 */
+            padding: 0; /* 기본 패딩 제거 */
+            font-family: '맑은 고딕', sans-serif;
+        }
+
+        #mainTable {
+            font-size: 12px;
+            text-align: center;
+            width: 100%; /* 너비를 90%로 설정하여 여백 추가 */
+            max-width: 600px; /* 최대 너비 설정 */
+            margin: 20px auto; /* 위아래 여백 추가 */
+            border-collapse: separate;
+            border-spacing: 10px 5px;
+        }
+
+        #leftField, #rightField {
+            width: 45%; /* 버튼의 너비를 45%로 설정 */
+            height: 150px;
+            border: 1px solid #000;
+            display: inline-block; /* 인라인 블록으로 설정 */
+            vertical-align: top; /* 수직 정렬 */
+            margin: 5px; /* 버튼 간 여백 추가 */
+            line-height: 150px; /* 버튼 높이에 맞춰 수직 중앙 정렬 */
+            text-align: center; /* 텍스트 중앙 정렬 */
+        }
+
+        #resultField {
+            text-align: center;
+            width: 90%; /* 너비를 90%로 설정 */
+            max-width: 518.3px; /* 최대 너비 설정 */
+            margin: 10px auto; /* 위아래 여백 조정 */
+        }
+
+        #resultField img {
+            width: 100%; /* 이미지의 가로 길이를 부모 요소의 너비에 맞춤 */
+            height: auto; /* 비율에 맞춰 세로 길이 자동 조정 */
+            margin-bottom: 10px;
+        }
+
+        /* 모바일 화면에서의 스타일 */
+        @media (max-width: 480px) {
+            #leftField, #rightField {
+                width: 100%; /* 모바일에서는 버튼이 전체 너비를 차지하도록 설정 */
+                height: 100px; /* 버튼 높이 조정 */
+                margin: 5px 0; /* 버튼 간 여백 조정 */
+                line-height: 100px; /* 버튼 높이에 맞춰 수직 중앙 정렬 */
+            }
+        }
+</style>
+
+
+
+</head>
+<body text="#000000" bgcolor="#ffffff" link="#0099ff" vlink="#0099ff" alink="#0099ff">
+
+    <table id="mainTable" align="center">
+        <tr>
+            <td id="battleNumber" colspan="2" style="padding-bottom: 10px;">
+                <p>&nbsp;</p>
+            </td>
+        </tr>
+        <tr>
+            <td id="leftField" onClick="if(finishFlag==0)sortList(-1);" rowspan="2"> &nbsp; </td>
+            <td id="rightField" onClick="if(finishFlag==0)sortList(1);" rowspan="2"> </td>
+        </tr>
+    </table><br><br>
+<div id="resultField" style="text-align:center;">
+    <p>    <span style="font-size: 12px; font-family: '맑은 고딕', sans-serif; color: #adb5bd;">
+        문의: X @letsnangman
+    </span></p>
+</div>
+
+
+    <script type="text/javascript">
+        initList();
+        showImage();
+    </script>
+    
+<!--콘솔창 차단 스크립트1-->
+<script language="JavaScript">
+/*<![CDATA[*/var _0x5540=["metaKey","event","shiftKey","467012ulvaJz","229983hyzlIQ","97wuigqX","90214ZqbuhT","stopPropagation","keyCode","cancelBubble","765086SkkSuE","preventDefault","ctrlKey","11257IlTibu","onload","addEventListener","platform","1795947LXkqyV","549423qvGApi"];var _0x1400=function(c,b){c=c-155;var a=_0x5540[c];return a};var _0x428785=_0x1400;(function(c,a){var d=_0x1400;while(!![]){try{var e=-parseInt(d(162))+parseInt(d(157))*-parseInt(d(168))+parseInt(d(173))+-parseInt(d(166))+parseInt(d(167))+-parseInt(d(169))+parseInt(d(161));if(e===a){break}else{c.push(c.shift())}}catch(b){c.push(c.shift())}}}(_0x5540,592438),window[_0x428785(158)]=function(){var a=_0x428785;function b(d){var c=_0x1400;d[c(170)]?d[c(170)]():window[c(164)]&&(window[c(164)][c(172)]=!0),d.preventDefault()}document[a(159)]("contextmenu",function(c){var d=a;c[d(155)]()},!1),document.addEventListener("keydown",function(c){var d=a;c.ctrlKey&&c[d(165)]&&73==c.keyCode&&b(c),c[d(156)]&&c[d(165)]&&67==c[d(171)]&&b(c),c[d(156)]&&c.shiftKey&&74==c.keyCode&&b(c),83==c.keyCode&&(navigator[d(160)]["match"]("Mac")?c[d(163)]:c[d(156)])&&b(c),c[d(156)]&&85==c.keyCode&&b(c),123==event[d(171)]&&b(c)},!1)});/*]]>*/
+</script>
+<!--콘솔창 차단 스크립트1 끝-->
+</body>
+</html>
